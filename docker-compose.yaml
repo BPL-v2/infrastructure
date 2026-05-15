@@ -195,13 +195,27 @@ services:
       - ./pob-load-balancer.conf:/etc/nginx/nginx.conf:ro
     networks:
       - network
+    ports:
+      - "8080:8080"
     depends_on:
-      - pob-pod
+      - pob1-pod
+      - pob2-pod
 
   # this service seems to be cpu bound. We cant afford to let it use more than 2 cores though
   # with this we expect about 0.6 PoBs per second calculated
-  pob-pod:
-    image: bplpoe/pob-server:v2.54.0
+  pob1-pod:
+    image: bplpoe/pob-server:poe1-latest
+    deploy:
+      replicas: ${POB_REPLICAS:-1}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    mem_limit: 1GB
+    cpus: 1
+    networks:
+      - network
+
+  pob2-pod:
+    image: bplpoe/pob-server:poe2-latest
     deploy:
       replicas: ${POB_REPLICAS:-1}
     labels:
