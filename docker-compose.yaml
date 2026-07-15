@@ -190,43 +190,28 @@ services:
     networks:
       - network
 
-  # Internal load balancer for pob-pod replicas
+  # Single image serving both games: /poe1/* and /poe2/* on port 8080.
+  # It keeps a shared pool of pre-warmed PoB workers; each warm worker is a
+  # full PoB process (~800MiB RSS), so POB_WORKERS drives the memory budget.
+  # Idle workers shut down after POB_IDLE_TIMEOUT_SEC without requests.
   pob-server:
-    image: nginx:1.29.4-alpine-slim
+    image: bplpoe/pob-server:latest
     container_name: pob-server
-    volumes:
-      - ./pob-load-balancer.conf:/etc/nginx/nginx.conf:ro
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - POB_WORKERS=${POB_WORKERS:-2}
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080"]
+      interval: 5s
+      timeout: 1s
+      retries: 1
+    mem_limit: 3GB
+    cpus: 2
     networks:
       - network
     ports:
       - "8080:8080"
-    depends_on:
-      - pob1-pod
-      - pob2-pod
-
-  # this service seems to be cpu bound. We cant afford to let it use more than 2 cores though
-  # with this we expect about 0.6 PoBs per second calculated
-  pob1-pod:
-    image: bplpoe/pob-server:poe1-latest
-    deploy:
-      replicas: ${POB_REPLICAS:-1}
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-    mem_limit: 1GB
-    cpus: 1
-    networks:
-      - network
-
-  pob2-pod:
-    image: bplpoe/pob-server:poe2-latest
-    deploy:
-      replicas: ${POB_REPLICAS:-1}
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-    mem_limit: 1GB
-    cpus: 1
-    networks:
-      - network
 
 volumes:
   db_data:
