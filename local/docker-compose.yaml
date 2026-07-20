@@ -119,7 +119,6 @@ services:
   #     - ./promtail-config.yml:/etc/promtail/config.yml
   #     - /var/log:/var/log
   #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
   #   networks:
   #     - network
 
