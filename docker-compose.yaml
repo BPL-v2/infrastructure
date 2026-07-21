@@ -206,7 +206,7 @@ services:
       timeout: 1s
       retries: 1
     mem_limit: 3GB
-    cpus: 2
+    cpus: 3
     networks:
       - network
     ports:
