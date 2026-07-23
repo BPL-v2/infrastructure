@@ -12,6 +12,7 @@ services:
       - "--http-api-update"
       - "--rolling-restart"
       - "--label-enable"
+      - "--use-compose-depends-on=false"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
