@@ -50,6 +50,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 # Minimum in-sync replicas for transactional logs
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0 # Initial delay before consumer group rebalancing
       KAFKA_NUM_PARTITIONS: 3 # Default number of partitions for new topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true" # Allow producers to auto-create topics, matching prod
+      KAFKA_LOG_DIRS: /opt/kafka/data # Store data on the mounted volume so it survives container recreation
     ports:
       - "9092:9092" # Port for Kafka broker
     volumes:

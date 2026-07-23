@@ -51,6 +51,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      kafka:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 8000 || exit 1"]
       interval: 5s
@@ -116,7 +118,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_LOG_DIRS: /opt/kafka/data
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -198,8 +200,7 @@ services:
     container_name: pob-server
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-    environment:
-      - POB_WORKERS=${POB_WORKERS:-2}
+    env_file: .env
     healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080"]
       interval: 5s
@@ -211,6 +212,8 @@ services:
       - network
     ports:
       - "8080:8080"
+    depends_on:
+      - kafka
 
 volumes:
   db_data:
