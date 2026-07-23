@@ -12,7 +12,6 @@ services:
       - "--http-api-update"
       - "--rolling-restart"
       - "--label-enable"
-      - "--use-compose-depends-on=false"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -213,8 +212,6 @@ services:
       - network
     ports:
       - "8080:8080"
-    depends_on:
-      - kafka
 
 volumes:
   db_data:
