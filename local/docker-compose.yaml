@@ -67,7 +67,7 @@ services:
       retries: 5
 
   # pob-server:
-  #   image: bplpoe/pob-server:v2.54.0
+  #   image: ghcr.io/bpl-v2/pob-server:v2.54.0
   #   container_name: pob-server
   #   mem_limit: 1.5GB
   #   cpus: 2

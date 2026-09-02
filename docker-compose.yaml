@@ -39,7 +39,7 @@ services:
         condition: service_started
 
   backend:
-    image: bplpoe/backend:1.0.2
+    image: ghcr.io/bpl-v2/backend:1.0.2
     ulimits:
       nofile:
         soft: 65535
@@ -62,7 +62,7 @@ services:
       - network
 
   frontend:
-    image: bplpoe/frontend:1.0.0
+    image: ghcr.io/bpl-v2/frontend:1.0.0
     container_name: frontend
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -70,7 +70,7 @@ services:
       - network
 
   discord-bot:
-    image: bplpoe/discord-bot:0.0.0
+    image: ghcr.io/bpl-v2/discord-bot:0.0.0
     container_name: discord-bot
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -196,7 +196,7 @@ services:
   # full PoB process (~800MiB RSS), so POB_WORKERS drives the memory budget.
   # Idle workers shut down after POB_IDLE_TIMEOUT_SEC without requests.
   pob-server:
-    image: bplpoe/pob-server:latest
+    image: ghcr.io/bpl-v2/pob-server:latest
     container_name: pob-server
     labels:
       - "com.centurylinklabs.watchtower.enable=true"

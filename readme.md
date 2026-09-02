@@ -93,10 +93,10 @@ docker compose up -d
 
 ## Deployment
 
-Once a change is pushed to the main branches of the backend/frontend/discord-bot/poe-server repos, they trigger a github action to push newly build docker images to dockerhub and send an update request to watchtower.
-The dockerhub repos are
+Once a change is pushed to the main branches of the backend/frontend/discord-bot/poe-server repos, they trigger a github action to push newly build docker images to the GitHub Container Registry (ghcr.io) and send an update request to watchtower.
+The image repos (public) are
 
-- https://hub.docker.com/repository/docker/bplpoe/frontend
-- https://hub.docker.com/repository/docker/bplpoe/backend
-- https://hub.docker.com/repository/docker/bplpoe/discord-bot
-- https://hub.docker.com/repository/docker/bplpoe/pob-server
+- https://github.com/orgs/BPL-v2/packages/container/package/frontend
+- https://github.com/orgs/BPL-v2/packages/container/package/backend
+- https://github.com/orgs/BPL-v2/packages/container/package/discord-bot
+- https://github.com/orgs/BPL-v2/packages/container/package/pob-server
