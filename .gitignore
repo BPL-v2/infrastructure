@@ -2,3 +2,7 @@
 .data
 kafka/
 /loki-data
+
+# database backups (see backup/README.md) - dumps live outside the repo
+backup/backups/
+*.sql.gz

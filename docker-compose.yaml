@@ -125,6 +125,14 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_MIN_INSYNC_REPLICAS: 1
       KAFKA_LOG_FLUSH_INTERVAL_MESSAGES: 1
+      # Default retention for every topic (KAFKA_AUTO_CREATE_TOPICS_ENABLE is on,
+      # so most topics are created implicitly with these settings). One week of
+      # time-based retention; the bytes cap is a runaway guard, not a normal
+      # limit - a single partition growing past 20 GiB means something is wrong.
+      # Per-topic overrides via kafka-configs.sh still win over these.
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_RETENTION_BYTES: 21474836480
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 60000
 
   prometheus:
     image: prom/prometheus:latest
