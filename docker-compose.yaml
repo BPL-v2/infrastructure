@@ -87,7 +87,7 @@ services:
     container_name: db
     restart: always
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
@@ -141,8 +141,6 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
     networks:
       - network
 
@@ -197,6 +195,18 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
+    networks:
+      - network
+
+  # Exposes topic offsets and consumer-group lag (kafka_consumergroup_lag) on :9308.
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.9.0
+    container_name: kafka-exporter
+    command: --kafka.server=kafka:9092
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_started
     networks:
       - network
 
