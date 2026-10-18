@@ -1,6 +1,7 @@
 services:
   watchtower:
     image: nickfedor/watchtower:1.14.0
+    restart: unless-stopped
     container_name: watchtower
     env_file:
       - .env
@@ -25,10 +26,14 @@ services:
         hard: 65535
     container_name: reverse-proxy
     restart: always
+    # Reload periodically so certificates renewed by the certbot service get picked up.
+    command: ["/bin/sh", "-c", "while :; do sleep 6h; nginx -s reload; done & exec nginx -g 'daemon off;'"]
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
     ports:
+      - "80:80"
       - "443:443"
     networks:
       - network
@@ -38,8 +43,33 @@ services:
       watchtower:
         condition: service_started
 
+  # Renews the Let's Encrypt certificate via the webroot method: challenge files are
+  # written to certbot_webroot and served by reverse-proxy on port 80.
+  # `certbot renew` is a no-op until the cert is within 30 days of expiry.
+  certbot:
+    image: certbot/certbot:v5.1.0
+    container_name: certbot
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        trap exit TERM
+        while :; do
+          certbot renew --cert-name bpl-poe.com --webroot -w /var/www/certbot
+          sleep 12h & wait $$!
+        done
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    networks:
+      - network
+    depends_on:
+      reverse-proxy:
+        condition: service_started
+
   backend:
     image: ghcr.io/bpl-v2/backend:1.0.2
+    restart: unless-stopped
     ulimits:
       nofile:
         soft: 65535
@@ -63,6 +93,7 @@ services:
 
   frontend:
     image: ghcr.io/bpl-v2/frontend:1.0.0
+    restart: unless-stopped
     container_name: frontend
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -71,6 +102,7 @@ services:
 
   discord-bot:
     image: ghcr.io/bpl-v2/discord-bot:0.0.0
+    restart: unless-stopped
     container_name: discord-bot
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -107,6 +139,7 @@ services:
   kafka:
     container_name: kafka
     image: apache/kafka:3.9.0
+    restart: unless-stopped
     volumes:
       - kafka_data:/opt/kafka/data
     networks:
@@ -137,6 +170,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    restart: unless-stopped
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
@@ -146,6 +180,7 @@ services:
 
   loki:
     image: grafana/loki:3.4
+    restart: unless-stopped
     container_name: loki
     volumes:
       - ./loki-config.yml:/etc/loki/local-config.yaml
@@ -155,6 +190,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    restart: unless-stopped
     container_name: grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
@@ -169,6 +205,7 @@ services:
 
   promtail:
     image: grafana/promtail:3.4
+    restart: unless-stopped
     container_name: promtail
     user: "0:0"
     command: -config.file=/etc/promtail/config.yml
@@ -181,6 +218,7 @@ services:
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
+    restart: unless-stopped
     environment:
       DATA_SOURCE_URI: db:5432/postgres?sslmode=disable
       DATA_SOURCE_USER: ${POSTGRES_USER}
@@ -194,6 +232,7 @@ services:
       - network
   node-exporter:
     image: prom/node-exporter:latest
+    restart: unless-stopped
     container_name: node-exporter
     networks:
       - network
@@ -216,6 +255,7 @@ services:
   # Idle workers shut down after POB_IDLE_TIMEOUT_SEC without requests.
   pob-server:
     image: ghcr.io/bpl-v2/pob-server:latest
+    restart: unless-stopped
     container_name: pob-server
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -238,6 +278,7 @@ volumes:
   loki_data:
   grafana_data:
   kafka_data:
+  certbot_webroot:
 
 networks:
   network:
